@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Jurídico — Controle de Agenda & Processos</title>
+<style>
+  :root {
+    --navy: #0F1B2D;
+    --slate: #1E2D3D;
+    --slate-mid: #2A3F54;
+    --slate-light: #3A5068;
+    --gold: #C9A84C;
+    --gold-light: #E2C57A;
+    --gold-dim: #8A6E30;
+    --ice: #F7F8FA;
+    --ice-mid: #EEF0F4;
+    --ice-dim: #D8DCE4;
+    --text-main: #1A2535;
+    --text-muted: #5A6A7E;
+    --text-light: #8A9AB0;
+    --red: #C0392B;
+    --red-light: #E74C3C;
+    --orange: #D35400;
+    --orange-light: #E67E22;
+    --green: #1A7A4A;
+    --green-light: #27AE60;
+    --blue: #1A5276;
+    --blue-light: #2980B9;
+    --purple: #6C3483;
+    --radius: 6px;
+    --shadow: 0 2px 12px rgba(15,27,45,0.12);
+    --shadow-lg: 0 8px 32px rgba(15,27,45,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--ice);
+    color: var(--text-main);
+    min-height: 100vh;
+    font-size: 13px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 54px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-brand .logo {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: var(--navy); font-size: 14px;
+    letter-spacing: -0.5px;
+  }
+
+  .header-brand h1 {
+    color: var(--ice);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .header-brand span {
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 400;
+    display: block;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--ice-dim);
+    font-size: 12px;
+  }
+
+  #live-clock {
+    font-family: 'Courier New', monospace;
+    color: var(--gold-light);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── TABS ── */
+  .tab-bar {
+    background: var(--slate);
+    display: flex;
+    padding: 0 24px;
+    gap: 2px;
+    border-bottom: 2px solid var(--gold);
+  }
+
+  .tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    color: var(--ice-dim);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tab-btn:hover { color: var(--gold-light); }
+
+  .tab-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+
+  .tab-btn .badge {
+    background: var(--red-light);
+    color: white;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .tab-btn.active .badge { background: var(--gold); color: var(--navy); }
+
+  /* ── LAYOUT ── */
+  .main-layout {
+    display: flex;
+    min-height: calc(100vh - 100px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--slate);
+    padding: 16px 0;
+    border-right: 1px solid var(--slate-mid);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar-section {
+    padding: 0 12px;
+  }
+
+  .sidebar-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    padding: 4px 4px 6px;
+    border-bottom: 1px solid var(--slate-mid);
+    margin-bottom: 6px;
+  }
+
+  /* Urgency gauge */
+  .urgency-panel {
+    padding: 12px;
+    margin: 8px 12px;
+    background: var(--navy);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--gold);
+  }
+
+  .urgency-title {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .urgency-bar-wrap { margin-bottom: 6px; }
+
+  .urgency-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--ice-dim);
+    margin-bottom: 3px;
+  }
+
+  .urgency-bar {
+    height: 5px;
+    background: var(--slate-mid);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .urgency-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .urgency-bar-fill.critical { background: var(--red-light); }
+  .urgency-bar-fill.warning { background: var(--orange-light); }
+  .urgency-bar-fill.ok { background: var(--green-light); }
+
+  /* Stats pills */
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: var(--navy);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    cursor: default;
+  }
+
+  .stat-pill-label { color: var(--ice-dim); font-size: 10px; }
+  .stat-pill-value { color: var(--gold-light); font-weight: 700; font-size: 12px; }
+
+  /* ── CONTENT ── */
+  .content {
+    flex: 1;
+    padding: 20px 24px;
+    overflow-y: auto;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+
+  .section-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--ice-dim);
+  }
+  .btn-ghost:hover { background: var(--ice-mid); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(192,57,43,0.3);
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  .btn-danger:hover { background: rgba(192,57,43,0.08); }
+
+  /* ── GRIDS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ice-mid);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ice);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  .card-body { padding: 16px; }
+
+  /* ── KPI CARDS ── */
+  .kpi-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    border-top: 3px solid var(--ice-dim);
+    transition: transform 0.15s;
+  }
+
+  .kpi-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+  .kpi-card.kpi-red { border-top-color: var(--red-light); }
+  .kpi-card.kpi-orange { border-top-color: var(--orange-light); }
+  .kpi-card.kpi-green { border-top-color: var(--green-light); }
+  .kpi-card.kpi-blue { border-top-color: var(--blue-light); }
+  .kpi-card.kpi-gold { border-top-color: var(--gold); }
+
+  .kpi-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.08em; }
+  .kpi-value { font-size: 26px; font-weight: 800; color: var(--navy); line-height: 1.1; margin: 4px 0 2px; }
+  .kpi-desc { font-size: 10px; color: var(--text-muted); }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .data-table thead tr {
+    background: var(--navy);
+    color: var(--gold-light);
+  }
+
+  .data-table thead th {
+    padding: 9px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid var(--ice-mid);
+    transition: background 0.1s;
+  }
+
+  .data-table tbody tr:hover { background: #F0F4FA; }
+
+  .data-table tbody td {
+    padding: 8px 12px;
+    color: var(--text-main);
+    vertical-align: middle;
+  }
+
+  .data-table td[contenteditable="true"]:focus {
+    outline: 2px solid var(--gold);
+    background: #FFFDF5;
+    border-radius: 2px;
+  }
+
+  /* ── BADGES/PILLS ── */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .badge-status::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.8;
+  }
+
+  .status-urgente { background: rgba(231,76,60,0.12); color: var(--red-light); }
+  .status-atencao { background: rgba(230,126,34,0.12); color: var(--orange); }
+  .status-andamento { background: rgba(41,128,185,0.12); color: var(--blue); }
+  .status-concluido { background: rgba(39,174,96,0.12); color: var(--green); }
+  .status-aguardando { background: rgba(108,52,131,0.12); color: var(--purple); }
+  .status-novo { background: rgba(201,168,76,0.15); color: var(--gold-dim); }
+
+  /* ── PRIORITY ── */
+  .priority {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .p-alta { background: var(--red-light); }
+  .p-media { background: var(--orange-light); }
+  .p-baixa { background: var(--green-light); }
+
+  /* ── FORMS ── */
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+
+  .form-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+  }
+
+  .form-input, .form-select, .form-textarea {
+    padding: 7px 10px;
+    border: 1px solid var(--ice-dim);
+    border-radius: var(--radius);
+    font-size: 12px;
+    background: white;
+    color: var(--text-main);
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
+  .form-textarea { resize: vertical; min-height: 64px; }
+
+  /* ── ADD FORM PANEL ── */
+  .add-panel {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gold-dim);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .add-panel.open { display: block; }
+
+  .add-panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background 0.1s;
+  }
+
+  .checklist-item:hover { background: var(--ice); }
+
+  .checklist-item input[type="checkbox"] {
+    width: 15px; height: 15px;
+    margin-top: 1px;
+    accent-color: var(--gold);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .checklist-item-text {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .checklist-item.done .checklist-item-text {
+    text-decoration: line-through;
+    color: var(--text-light);
+  }
+
+  .checklist-item-meta {
+    font-size: 10px;
+    color: var(--text-light);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 4px; }
+  .progress-bar {
+    height: 6px;
+    background: var(--ice-mid);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  /* ── CALENDAR ── */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .cal-day-name {
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    padding: 4px 2px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 4px 2px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.1s;
+    background: white;
+    border: 1px solid var(--ice-mid);
+    min-height: 52px;
+  }
+
+  .cal-day:hover { background: #F0F4FA; }
+  .cal-day.today { background: var(--navy); color: white; border-color: var(--navy); }
+  .cal-day.today .cal-day-num { color: var(--gold); font-weight: 800; }
+  .cal-day.has-event .cal-dot { display: block; }
+  .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+
+  .cal-day-num { font-weight: 600; font-size: 12px; }
+
+  .cal-dot {
+    display: none;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-top: 2px;
+  }
+
+  .cal-dots { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; justify-content: center; }
+  .cal-event-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px; top: 6px; bottom: 0;
+    width: 2px;
+    background: var(--ice-dim);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0 0 16px 16px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -8px; top: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+
+  .timeline-item.urgent::before { background: var(--red-light); box-shadow: 0 0 0 1px var(--red-light); }
+  .timeline-item.warning::before { background: var(--orange-light); box-shadow: 0 0 0 1px var(--orange-light); }
+
+  .timeline-date { font-size: 10px; color: var(--text-light); margin-bottom: 2px; font-family: 'Courier New', monospace; }
+  .timeline-title { font-size: 12px; font-weight: 600; color: var(--text-main); }
+  .timeline-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── PRAZO ALERT ── */
+  .prazo-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    border-left: 3px solid;
+  }
+
+  .prazo-alert.critical { background: rgba(231,76,60,0.08); border-color: var(--red-light); }
+  .prazo-alert.warning { background: rgba(230,126,34,0.08); border-color: var(--orange-light); }
+  .prazo-alert.info { background: rgba(41,128,185,0.08); border-color: var(--blue-light); }
+
+  .prazo-icon { font-size: 16px; flex-shrink: 0; }
+  .prazo-content { flex: 1; }
+  .prazo-title { font-size: 12px; font-weight: 600; }
+  .prazo-meta { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+  .prazo-days {
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    font-family: 'Courier New', monospace;
+  }
+
+  .prazo-alert.critical .prazo-days { color: var(--red-light); }
+  .prazo-alert.warning .prazo-days { color: var(--orange); }
+  .prazo-alert.info .prazo-days { color: var(--blue-light); }
+
+  /* ── ACTION BUTTONS ── */
+  .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px 5px;
+    border-radius: 3px;
+    font-size: 13px;
+    transition: background 0.1s;
+    color: var(--text-muted);
+  }
+  .action-btn:hover { background: var(--ice-mid); color: var(--navy); }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--ice-dim);
+    background: white;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.12s;
+    color: var(--text-muted);
+  }
+
+  .filter-chip:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .filter-chip.active { background: var(--navy); color: var(--gold-light); border-color: var(--navy); }
+
+  .search-box {
+    padding: 5px 12px;
+    border: 1px solid var(--ice-dim);
+    border-radius: 20px;
+    font-size: 12px;
+    background: white;
+    color: var(--text-main);
+    width: 200px;
+    margin-left: auto;
+  }
+
+  .search-box:focus { outline: none; border-color: var(--gold); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media print {
+    header, .tab-bar, .sidebar, .btn, .filter-bar { display: none !important; }
+    .tab-panel { display: block !important; }
+    body { background: white; }
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--ice-mid);
+    margin: 16px 0;
+  }
+
+  .text-right { text-align: right; }
+  .flex-end { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* Tooltip-like note */
+  .note-box {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--gold-dim);
+    margin-bottom: 12px;
+  }
+
+  .note-box strong { color: var(--gold-dim); }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-light);
+    font-size: 12px;
+  }
+
+  .empty-state .empty-icon { font-size: 28px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TELA DE LOGIN ═══ -->
+<div id="login-screen" style="position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:1000;">
+  <div style="background:white;border-radius:8px;padding:32px;width:100%;max-width:360px;box-shadow:var(--shadow-lg)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <div style="width:36px;height:36px;background:var(--gold);border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy);font-size:15px">JD</div>
+      <div>
+        <div style="font-weight:700;color:var(--navy);font-size:15px">Painel Jurídico</div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em">Acesso restrito</div>
+      </div>
+    </div>
+
+    <div id="login-form">
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label">E-mail</label>
+        <input type="email" class="form-input" id="login-email" placeholder="seu@email.com" style="width:100%">
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Senha</label>
+        <input type="password" class="form-input" id="login-password" placeholder="••••••••" style="width:100%">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:9px" onclick="doLogin()">Entrar</button>
+      <div id="login-error" style="color:var(--red-light);font-size:11px;margin-top:10px;text-align:center"></div>
+      <hr class="divider">
+      <div style="font-size:11px;color:var(--text-muted);text-align:center">
+        Primeiro acesso? <a href="#" onclick="doSignup();return false;" style="color:var(--gold-dim);font-weight:600">Criar minha conta</a>
+      </div>
+    </div>
+
+    <div id="login-loading" style="display:none;text-align:center;padding:20px;color:var(--text-muted);font-size:12px">
+      Conectando...
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-brand">
+    <div class="logo">JD</div>
+    <div>
+      <h1>Painel Jurídico</h1>
+      <span>Gestão de Agenda · Processos · Prazos</span>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span id="live-date"></span>
+    <span id="live-clock"></span>
+    <span id="sync-status" style="font-size:11px;color:var(--green-light)">●  sincronizado</span>
+    <button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button>
+    <button class="btn btn-primary" onclick="saveDataManual()">💾 Salvar</button>
+    <button class="btn btn-ghost" onclick="doLogout()">🚪 Sair</button>
+  </div>
+</header>
+
+<!-- ═══ TABS ═══ -->
+<div class="tab-bar" id="app-tabbar" style="display:none">
+  <button class="tab-btn active" onclick="switchTab('agenda')" id="tab-agenda">
+    📅 Agenda
+  </button>
+  <button class="tab-btn" onclick="switchTab('processos')" id="tab-processos">
+    ⚖️ Processos <span class="badge" id="badge-processos">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('tarefas')" id="tab-tarefas">
+    ✅ Tarefas & Checklist <span class="badge" id="badge-tarefas">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('contratos')" id="tab-contratos">
+    📄 Contratos
+  </button>
+  <button class="tab-btn" onclick="switchTab('prazos')" id="tab-prazos">
+    ⏰ Prazos Críticos <span class="badge" id="badge-prazos">0</span>
+  </button>
+</div>
+
+<!-- ═══ MAIN LAYOUT ═══ -->
+<div class="main-layout" id="app-content" style="display:none">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <!-- Urgency gauge -->
+    <div class="urgency-panel">
+      <div class="urgency-title">⚡ Termômetro de Urgência</div>
+      <div class="urgency-bar-wrap">
+        <div class="urgency-bar-label"><span>Crítico</span><span id="urg-critical-count">0</span></div>
+        <div class="urgency-bar"><div class="urgency-bar-fill critical" id="urg-critical" style="width:0%"></div></div>
+      </div>
+      <div class="urgency-bar-wrap">
+        <div class="urgency-bar-label"><span>Atenção</span><span id="urg-warning-count">0</span></div>
+        <div class="urgency-bar"><div class="urgency-bar-fill warning" id="urg-warning" style="width:0%"></div></div>
+      </div>
+      <div class="urgency-bar-wrap">
+        <div class="urgency-bar-label"><span>Normal</span><span id="urg-ok-count">0</span></div>
+        <div class="urgency-bar"><div class="urgency-bar-fill ok" id="urg-ok" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resumo Geral</div>
+      <div class="stat-pill"><span class="stat-pill-label">Processos Ativos</span><span class="stat-pill-value" id="stat-proc">0</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">Tarefas Pendentes</span><span class="stat-pill-value" id="stat-tasks">0</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">Contratos em Análise</span><span class="stat-pill-value" id="stat-contr">0</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">Audiências este mês</span><span class="stat-pill-value" id="stat-aud">0</span></div>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">
+      <div class="sidebar-label">Próximos Compromissos</div>
+      <div id="sidebar-eventos" style="font-size:11px; color: var(--ice-dim); padding: 4px;">
+        Nenhum evento próximo.
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- ════ TAB: AGENDA ════ -->
+    <div class="tab-panel active" id="panel-agenda">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📅 Agenda Mensal</div>
+          <div class="section-sub">Compromissos, audiências, reuniões e prazos</div>
+        </div>
+        <button class="btn btn-primary" onclick="togglePanel('add-agenda')">+ Novo Compromisso</button>
+      </div>
+
+      <!-- Add Agenda Form -->
+      <div class="add-panel" id="add-agenda">
+        <div class="add-panel-title">📝 Novo Compromisso</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Título *</label>
+            <input type="text" class="form-input" id="ag-titulo" placeholder="Ex: Audiência — João Silva">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data *</label>
+            <input type="date" class="form-input" id="ag-data">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Horário</label>
+            <input type="time" class="form-input" id="ag-hora">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="ag-tipo">
+              <option>Audiência</option>
+              <option>Reunião</option>
+              <option>Prazo Processual</option>
+              <option>Perícia</option>
+              <option>Protocolo</option>
+              <option>Consulta</option>
+              <option>Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Processo / Referência</label>
+            <input type="text" class="form-input" id="ag-processo" placeholder="Nº do processo ou cliente">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Local / Vara</label>
+            <input type="text" class="form-input" id="ag-local" placeholder="Ex: 3ª Vara Cível">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prioridade</label>
+            <select class="form-select" id="ag-prioridade">
+              <option>Alta</option>
+              <option>Média</option>
+              <option>Baixa</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="ag-status">
+              <option>Agendado</option>
+              <option>Confirmado</option>
+              <option>Realizado</option>
+              <option>Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="ag-obs" placeholder="Detalhes relevantes..."></textarea>
+        </div>
+        <div class="flex-end">
+          <button class="btn btn-ghost" onclick="togglePanel('add-agenda')">Cancelar</button>
+          <button class="btn btn-primary" onclick="addAgenda()">Adicionar Compromisso</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Calendário visual -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📆 Calendário</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="action-btn" onclick="changeMonth(-1)">‹</button>
+              <span id="cal-month-label" style="font-size:12px;font-weight:600;color:var(--navy)"></span>
+              <button class="action-btn" onclick="changeMonth(1)">›</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px">
+            <div id="cal-grid" class="cal-grid"></div>
+          </div>
+        </div>
+
+        <!-- Lista de próximos eventos -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">⏭ Próximos Compromissos</span>
+          </div>
+          <div class="card-body" style="padding:8px 12px; max-height:280px; overflow-y:auto;">
+            <div class="timeline" id="timeline-agenda">
+              <div class="empty-state"><div class="empty-icon">📅</div>Nenhum compromisso cadastrado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela completa -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Todos os Compromissos</span>
+          <input type="text" class="search-box" placeholder="🔍 Buscar..." oninput="filterTable('agenda-tbody', this.value)">
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Processo / Ref.</th>
+                <th>Local / Vara</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th>Obs.</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="agenda-tbody">
+              <tr><td colspan="10" class="empty-state">Nenhum compromisso. Clique em "+ Novo Compromisso"</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: PROCESSOS ════ -->
+    <div class="tab-panel" id="panel-processos">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⚖️ Gestão de Processos</div>
+          <div class="section-sub">Acompanhamento de andamentos, fases e etapas processuais</div>
+        </div>
+        <button class="btn btn-primary" onclick="togglePanel('add-processo')">+ Novo Processo</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid-4" id="proc-kpis">
+        <div class="kpi-card kpi-blue"><div class="kpi-label">Total de Processos</div><div class="kpi-value" id="kpi-total-proc">0</div><div class="kpi-desc">em carteira</div></div>
+        <div class="kpi-card kpi-orange"><div class="kpi-label">Em Andamento</div><div class="kpi-value" id="kpi-em-andamento">0</div><div class="kpi-desc">aguardam movimentação</div></div>
+        <div class="kpi-card kpi-red"><div class="kpi-label">Prazo Crítico</div><div class="kpi-value" id="kpi-critico">0</div><div class="kpi-desc">próximos 7 dias</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">Concluídos</div><div class="kpi-value" id="kpi-concluido">0</div><div class="kpi-desc">este ano</div></div>
+      </div>
+
+      <!-- Add Processo Form -->
+      <div class="add-panel" id="add-processo">
+        <div class="add-panel-title">⚖️ Novo Processo</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Número do Processo *</label>
+            <input type="text" class="form-input" id="pr-numero" placeholder="0000000-00.0000.0.00.0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cliente *</label>
+            <input type="text" class="form-input" id="pr-cliente" placeholder="Nome da parte">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parte Contrária</label>
+            <input type="text" class="form-input" id="pr-adversa" placeholder="Réu / Autor">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Área / Ramo</label>
+            <select class="form-select" id="pr-area">
+              <option>Cível</option>
+              <option>Trabalhista</option>
+              <option>Criminal</option>
+              <option>Tributário</option>
+              <option>Empresarial</option>
+              <option>Previdenciário</option>
+              <option>Administrativo</option>
+              <option>Família</option>
+              <option>Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vara / Tribunal</label>
+            <input type="text" class="form-input" id="pr-vara" placeholder="Ex: 1ª Vara Trabalhista SP">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fase Processual</label>
+            <select class="form-select" id="pr-fase">
+              <option>Petição Inicial</option>
+              <option>Citação</option>
+              <option>Contestação</option>
+              <option>Instrução</option>
+              <option>Audiência de Instrução</option>
+              <option>Alegações Finais</option>
+              <option>Sentença</option>
+              <option>Recurso</option>
+              <option>Execução</option>
+              <option>Arquivado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Próximo Prazo</label>
+            <input type="date" class="form-input" id="pr-prazo">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="pr-status">
+              <option>Em Andamento</option>
+              <option>Aguardando Decisão</option>
+              <option>Prazo Crítico</option>
+              <option>Suspenso</option>
+              <option>Concluído</option>
+              <option>Arquivado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Valor da Causa (R$)</label>
+            <input type="text" class="form-input" id="pr-valor" placeholder="0,00">
+          </div>
+          <div class="form-group" style="grid-column: span 3">
+            <label class="form-label">Última Movimentação / Observação</label>
+            <input type="text" class="form-input" id="pr-obs" placeholder="Descreva o andamento mais recente...">
+          </div>
+        </div>
+        <div class="flex-end">
+          <button class="btn btn-ghost" onclick="togglePanel('add-processo')">Cancelar</button>
+          <button class="btn btn-primary" onclick="addProcesso()">Cadastrar Processo</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterProcessos('todos', this)">Todos</button>
+        <button class="filter-chip" onclick="filterProcessos('Em Andamento', this)">Em Andamento</button>
+        <button class="filter-chip" onclick="filterProcessos('Prazo Crítico', this)">Prazo Crítico</button>
+        <button class="filter-chip" onclick="filterProcessos('Aguardando Decisão', this)">Aguardando</button>
+        <button class="filter-chip" onclick="filterProcessos('Concluído', this)">Concluídos</button>
+        <input type="text" class="search-box" placeholder="🔍 Processo / Cliente..." oninput="filterTable('processos-tbody', this.value)">
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nº Processo</th>
+                <th>Cliente</th>
+                <th>Parte Contrária</th>
+                <th>Área</th>
+                <th>Vara / Tribunal</th>
+                <th>Fase</th>
+                <th>Próximo Prazo</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Movimentação</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="processos-tbody">
+              <tr><td colspan="11" class="empty-state">Nenhum processo cadastrado. Clique em "+ Novo Processo"</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: TAREFAS ════ -->
+    <div class="tab-panel" id="panel-tarefas">
+      <div class="section-header">
+        <div>
+          <div class="section-title">✅ Tarefas & Checklists</div>
+          <div class="section-sub">Pesquisas, peças, legislações, diligências e obrigações diárias</div>
+        </div>
+        <button class="btn btn-primary" onclick="togglePanel('add-tarefa')">+ Nova Tarefa</button>
+      </div>
+
+      <!-- Add Tarefa Form -->
+      <div class="add-panel" id="add-tarefa">
+        <div class="add-panel-title">✅ Nova Tarefa</div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column: span 2">
+            <label class="form-label">Tarefa *</label>
+            <input type="text" class="form-input" id="tk-titulo" placeholder="Descreva a tarefa ou item de checklist">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-select" id="tk-categoria">
+              <option>Peça Processual</option>
+              <option>Pesquisa Jurídica</option>
+              <option>Análise de Contrato</option>
+              <option>Legislação / Norma</option>
+              <option>Protocolo / Diligência</option>
+              <option>Parecer</option>
+              <option>Recurso</option>
+              <option>Estudo de Caso</option>
+              <option>Administrativo</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prioridade</label>
+            <select class="form-select" id="tk-prioridade">
+              <option>Alta</option>
+              <option>Média</option>
+              <option>Baixa</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Processo Vinculado</label>
+            <input type="text" class="form-input" id="tk-processo" placeholder="Nº ou cliente">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prazo</label>
+            <input type="date" class="form-input" id="tk-prazo">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Responsável</label>
+            <input type="text" class="form-input" id="tk-resp" placeholder="Nome / Estagiário">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="tk-status">
+              <option>Pendente</option>
+              <option>Em Execução</option>
+              <option>Revisão</option>
+              <option>Concluída</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Descrição / Checklist de etapas</label>
+          <textarea class="form-textarea" id="tk-desc" placeholder="Detalhes, etapas ou itens a verificar..."></textarea>
+        </div>
+        <div class="flex-end">
+          <button class="btn btn-ghost" onclick="togglePanel('add-tarefa')">Cancelar</button>
+          <button class="btn btn-primary" onclick="addTarefa()">Adicionar Tarefa</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Checklist rápida por categoria -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📋 Checklist Legislações & Normas</span>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:11px" onclick="addCheckItem()">+ Item</button>
+          </div>
+          <div class="card-body" style="padding:8px; max-height:320px; overflow-y:auto;" id="checklist-legislacao">
+            <div class="checklist-item" id="cl-item-template" style="display:none"></div>
+            <!-- Items rendered by JS -->
+            <div class="empty-state" id="cl-empty"><div class="empty-icon">📋</div>Adicione itens de checklist</div>
+          </div>
+        </div>
+
+        <!-- Progress de tarefas -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">📊 Progresso por Categoria</span></div>
+          <div class="card-body" id="progress-categorias">
+            <div class="empty-state"><div class="empty-icon">📊</div>Sem dados ainda</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de tarefas -->
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterTarefas('todas', this)">Todas</button>
+        <button class="filter-chip" onclick="filterTarefas('Pendente', this)">Pendentes</button>
+        <button class="filter-chip" onclick="filterTarefas('Em Execução', this)">Em Execução</button>
+        <button class="filter-chip" onclick="filterTarefas('Concluída', this)">Concluídas</button>
+        <button class="filter-chip" onclick="filterTarefas('Alta', this)">Alta Prioridade</button>
+        <input type="text" class="search-box" placeholder="🔍 Buscar tarefa..." oninput="filterTable('tarefas-tbody', this.value)">
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>✓</th>
+                <th>Tarefa</th>
+                <th>Categoria</th>
+                <th>Processo / Ref.</th>
+                <th>Prazo</th>
+                <th>Responsável</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th>Descrição</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tarefas-tbody">
+              <tr><td colspan="10" class="empty-state">Nenhuma tarefa cadastrada.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: CONTRATOS ════ -->
+    <div class="tab-panel" id="panel-contratos">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📄 Gestão de Contratos</div>
+          <div class="section-sub">Análise, vencimentos, renovações e status de contratos</div>
+        </div>
+        <button class="btn btn-primary" onclick="togglePanel('add-contrato')">+ Novo Contrato</button>
+      </div>
+
+      <!-- Add Contrato Form -->
+      <div class="add-panel" id="add-contrato">
+        <div class="add-panel-title">📄 Novo Contrato</div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column: span 2">
+            <label class="form-label">Identificação / Objeto *</label>
+            <input type="text" class="form-input" id="ct-titulo" placeholder="Ex: Contrato de Prestação de Serviços — Empresa XYZ">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="ct-tipo">
+              <option>Prestação de Serviços</option>
+              <option>Compra e Venda</option>
+              <option>Locação</option>
+              <option>Sociedade</option>
+              <option>Franquia</option>
+              <option>Trabalho</option>
+              <option>Licença</option>
+              <option>Parceria</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="ct-status">
+              <option>Em Análise</option>
+              <option>Pendente Assinatura</option>
+              <option>Vigente</option>
+              <option>Vencido</option>
+              <option>Renovado</option>
+              <option>Rescindido</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Parte A (Cliente)</label>
+            <input type="text" class="form-input" id="ct-parteA" placeholder="Nome / Empresa">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parte B (Contraparte)</label>
+            <input type="text" class="form-input" id="ct-parteB" placeholder="Nome / Empresa">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de Assinatura</label>
+            <input type="date" class="form-input" id="ct-assinatura">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vencimento</label>
+            <input type="date" class="form-input" id="ct-vencimento">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Valor (R$)</label>
+            <input type="text" class="form-input" id="ct-valor" placeholder="0,00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Renovação Automática</label>
+            <select class="form-select" id="ct-renovacao">
+              <option>Não</option>
+              <option>Sim</option>
+              <option>Mediante Aditivo</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2">
+            <label class="form-label">Cláusulas / Pontos de Atenção</label>
+            <input type="text" class="form-input" id="ct-obs" placeholder="Notas sobre cláusulas críticas...">
+          </div>
+        </div>
+
+        <!-- Checklist de análise de contrato -->
+        <div style="margin-bottom:12px">
+          <div class="form-label" style="margin-bottom:8px">Checklist de Análise Contratual</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px" id="ct-checklist">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <button class="btn btn-ghost" onclick="togglePanel('add-contrato')">Cancelar</button>
+          <button class="btn btn-primary" onclick="addContrato()">Cadastrar Contrato</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterContratos('todos', this)">Todos</button>
+        <button class="filter-chip" onclick="filterContratos('Em Análise', this)">Em Análise</button>
+        <button class="filter-chip" onclick="filterContratos('Vigente', this)">Vigentes</button>
+        <button class="filter-chip" onclick="filterContratos('Vencido', this)">Vencidos</button>
+        <button class="filter-chip" onclick="filterContratos('Pendente Assinatura', this)">Pend. Assinatura</button>
+        <input type="text" class="search-box" placeholder="🔍 Contrato / Parte..." oninput="filterTable('contratos-tbody', this.value)">
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Contrato / Objeto</th>
+                <th>Tipo</th>
+                <th>Parte A</th>
+                <th>Parte B</th>
+                <th>Assinatura</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Renovação</th>
+                <th>Status</th>
+                <th>Pontos de Atenção</th>
+                <th>Checklist</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="contratos-tbody">
+              <tr><td colspan="12" class="empty-state">Nenhum contrato cadastrado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: PRAZOS ════ -->
+    <div class="tab-panel" id="panel-prazos">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⏰ Painel de Prazos Críticos</div>
+          <div class="section-sub">Visão unificada de todos os prazos processuais e contratuais</div>
+        </div>
+      </div>
+
+      <div class="note-box">
+        <strong>💡 Atenção:</strong> Este painel agrega automaticamente todos os prazos cadastrados nos módulos de Processos, Agenda e Contratos. Mantenha as datas atualizadas para que as alertas funcionem corretamente.
+      </div>
+
+      <div class="grid-3">
+        <div class="card kpi-card kpi-red">
+          <div class="kpi-label">🔴 Vencendo em até 3 dias</div>
+          <div class="kpi-value" id="pz-3dias">0</div>
+          <div class="kpi-desc">ação imediata necessária</div>
+        </div>
+        <div class="card kpi-card kpi-orange">
+          <div class="kpi-label">🟡 Vencendo em até 7 dias</div>
+          <div class="kpi-value" id="pz-7dias">0</div>
+          <div class="kpi-desc">atenção redobrada</div>
+        </div>
+        <div class="card kpi-card kpi-blue">
+          <div class="kpi-label">🔵 Vencendo em até 30 dias</div>
+          <div class="kpi-value" id="pz-30dias">0</div>
+          <div class="kpi-desc">planejamento necessário</div>
+        </div>
+      </div>
+
+      <div id="prazos-list">
+        <div class="empty-state" style="padding:48px">
+          <div class="empty-icon">⏰</div>
+          Nenhum prazo cadastrado. Adicione processos e compromissos com datas para ver os alertas aqui.
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════ FIREBASE SDK ══════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // ⚠️ SUBSTITUA pelas chaves do SEU projeto Firebase (veja o passo a passo enviado)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAReP8_0BMxLwYLJnLhnrzXrOkEsa0FAz0",
+    authDomain: "painel-juridico-5381d.firebaseapp.com",
+    projectId: "painel-juridico-5381d",
+    storageBucket: "COLE_AQUI_SEU_PROJETO.appspot.com",
+    messagingSenderId: "1067593488586",
+    appId: "1:1067593488586:web:9c3712aecb5e08327afc33"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let unsubscribeSnapshot = null;
+
+  // Expor para o script principal (fora do module)
+  window.firebaseAuth = auth;
+  window.firebaseDb = db;
+
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    if (!email || !password) { errEl.textContent = 'Preencha e-mail e senha.'; return; }
+
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('login-loading').style.display = 'block';
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('login-loading').style.display = 'none';
+      errEl.textContent = traduzErroFirebase(e.code);
+    }
+  };
+
+  window.doSignup = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    if (!email || !password) { errEl.textContent = 'Preencha e-mail e senha (mín. 6 caracteres).'; return; }
+
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('login-loading').style.display = 'block';
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('login-loading').style.display = 'none';
+      errEl.textContent = traduzErroFirebase(e.code);
+    }
+  };
+
+  window.doLogout = async function() {
+    if (!confirm('Deseja sair?')) return;
+    if (unsubscribeSnapshot) unsubscribeSnapshot();
+    await signOut(auth);
+  };
+
+  function traduzErroFirebase(code) {
+    const map = {
+      'auth/invalid-email': 'E-mail inválido.',
+      'auth/user-not-found': 'Usuário não encontrado. Use "Criar minha conta".',
+      'auth/wrong-password': 'Senha incorreta.',
+      'auth/invalid-credential': 'E-mail ou senha incorretos.',
+      'auth/email-already-in-use': 'Este e-mail já tem conta. Use "Entrar".',
+      'auth/weak-password': 'Senha muito curta (mínimo 6 caracteres).',
+      'auth/network-request-failed': 'Falha de conexão. Verifique sua internet.',
+    };
+    return map[code] || 'Erro: ' + code;
+  }
+
+  let isSavingLocally = false;
+
+  // ── Salvar no Firestore ──
+  window.cloudSave = async function(stateObj) {
+    if (!currentUser) return;
+    isSavingLocally = true;
+    try {
+      const cleanState = JSON.parse(JSON.stringify(stateObj));
+      delete cleanState.calCurrentDate;
+      await setDoc(doc(db, 'paineis', currentUser.uid), {
+        data: JSON.stringify(cleanState),
+        atualizadoEm: new Date().toISOString()
+      });
+      document.getElementById('sync-status').innerHTML = '● sincronizado';
+      document.getElementById('sync-status').style.color = 'var(--green-light)';
+    } catch (e) {
+      document.getElementById('sync-status').innerHTML = '● erro ao sincronizar';
+      document.getElementById('sync-status').style.color = 'var(--red-light)';
+      console.error(e);
+    }
+    setTimeout(() => { isSavingLocally = false; }, 800);
+  };
+
+  // ── Observa login/logout ──
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-content').style.display = 'flex';
+      document.getElementById('app-tabbar').style.display = 'flex';
+
+      // Carrega dados da nuvem em tempo real
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+      unsubscribeSnapshot = onSnapshot(doc(db, 'paineis', user.uid), (snap) => {
+        if (isSavingLocally) return;
+        if (snap.exists() && window.applyCloudState) {
+          window.applyCloudState(snap.data().data);
+        } else if (window.initEmptyState) {
+          window.initEmptyState();
+        }
+      });
+    } else {
+      currentUser = null;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-content').style.display = 'none';
+      document.getElementById('app-tabbar').style.display = 'none';
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('login-loading').style.display = 'none';
+    }
+  });
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+
+let state = {
+  agenda: [],
+  processos: [],
+  tarefas: [],
+  contratos: [],
+  checklistLegislacao: [
+    { id: 1, text: 'Verificar legislação vigente aplicável ao caso', done: false, ref: 'Pesquisa Inicial' },
+    { id: 2, text: 'Conferir alterações legislativas recentes (últimos 90 dias)', done: false, ref: 'Atualização' },
+    { id: 3, text: 'Pesquisar jurisprudência dos Tribunais Superiores', done: false, ref: 'STJ / STF' },
+    { id: 4, text: 'Verificar enunciados de súmulas aplicáveis', done: false, ref: 'Súmulas' },
+    { id: 5, text: 'Conferir prazo prescricional e decadencial', done: false, ref: 'Prazos' },
+    { id: 6, text: 'Analisar competência territorial e material', done: false, ref: 'Competência' },
+    { id: 7, text: 'Verificar legitimidade ativa e passiva', done: false, ref: 'Partes' },
+    { id: 8, text: 'Conferir requisitos de admissibilidade do recurso', done: false, ref: 'Recursos' },
+  ],
+  calCurrentDate: new Date(),
+  filterProcessos: 'todos',
+  filterTarefas: 'todas',
+  filterContratos: 'todos',
+};
+
+const contractChecklist = [
+  'Partes identificadas corretamente',
+  'Objeto claramente definido',
+  'Prazo/vigência estabelecido',
+  'Cláusula de rescisão presente',
+  'Penalidades/multas definidas',
+  'Foro de eleição definido',
+  'Reajuste/remuneração claro',
+  'Confidencialidade prevista',
+  'Legislação aplicável indicada',
+  'Assinaturas/testemunhas ok',
+];
+
+// ══════════════════════════════════════════════════════
+// LOAD / SAVE
+// ══════════════════════════════════════════════════════
+
+function saveData() {
+  try { localStorage.setItem('painel-juridico-backup', JSON.stringify(state)); } catch(e) {}
+  if (window.cloudSave) window.cloudSave(state);
+}
+
+function saveDataManual() {
+  saveData();
+  showToast('✅ Dados salvos!');
+}
+
+// Chamado automaticamente quando o Firebase traz dados da nuvem
+window.applyCloudState = function(jsonString) {
+  try {
+    const parsed = JSON.parse(jsonString);
+    state = { ...state, ...parsed, calCurrentDate: new Date() };
+    rerenderAll();
+  } catch(e) { console.error('Erro ao aplicar dados da nuvem', e); }
+};
+
+// Chamado quando o usuário é novo e não tem dados ainda na nuvem
+window.initEmptyState = function() {
+  rerenderAll();
+};
+
+function rerenderAll() {
+  renderCalendar();
+  renderAgenda();
+  renderProcessos();
+  renderTarefas();
+  renderContratos();
+  renderChecklistLegislacao();
+  updateStats();
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;background:var(--navy);color:var(--gold-light);padding:10px 18px;border-radius:6px;font-size:13px;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.3);border-left:3px solid var(--gold);`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+// ══════════════════════════════════════════════════════
+// CLOCK & DATE
+// ══════════════════════════════════════════════════════
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-clock').textContent = now.toLocaleTimeString('pt-BR');
+  document.getElementById('live-date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ══════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'prazos') renderPrazos();
+}
+
+function togglePanel(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════════════════
+
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function changeMonth(dir) {
+  state.calCurrentDate.setMonth(state.calCurrentDate.getMonth() + dir);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const d = state.calCurrentDate;
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  document.getElementById('cal-month-label').textContent = MONTHS[month] + ' ' + year;
+
+  const first = new Date(year, month, 1).getDay();
+  const days = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+
+  // Map events to days
+  const eventDays = {};
+  state.agenda.forEach(ev => {
+    const evDate = new Date(ev.data + 'T00:00:00');
+    if (evDate.getFullYear() === year && evDate.getMonth() === month) {
+      const day = evDate.getDate();
+      if (!eventDays[day]) eventDays[day] = [];
+      eventDays[day].push(ev);
+    }
+  });
+
+  let html = DAYS_SHORT.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  for (let i = 0; i < first; i++) {
+    html += `<div class="cal-day empty"></div>`;
+  }
+
+  for (let i = 1; i <= days; i++) {
+    const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
+    const hasEv = eventDays[i] ? eventDays[i].length : 0;
+    let dotsHtml = '';
+    if (hasEv) {
+      const colors = { 'Alta': '#E74C3C', 'Média': '#E67E22', 'Baixa': '#27AE60' };
+      dotsHtml = `<div class="cal-dots">${eventDays[i].slice(0,3).map(ev =>
+        `<div class="cal-event-dot" style="background:${colors[ev.prioridade]||'#C9A84C'}" title="${ev.titulo}"></div>`
+      ).join('')}</div>`;
+    }
+    html += `<div class="cal-day${isToday?' today':''}${hasEv?' has-event':''}" title="${hasEv?hasEv+' compromisso(s)':''}">
+      <div class="cal-day-num">${i}</div>
+      ${dotsHtml}
+    </div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+
+function statusBadge(s) {
+  const map = {
+    'Urgente': 'status-urgente', 'Prazo Crítico': 'status-urgente',
+    'Atenção': 'status-atencao', 'Agendado': 'status-atencao',
+    'Em Andamento': 'status-andamento', 'Em Execução': 'status-andamento',
+    'Confirmado': 'status-andamento', 'Vigente': 'status-andamento',
+    'Concluído': 'status-concluido', 'Realizado': 'status-concluido', 'Concluída': 'status-concluido',
+    'Aguardando Decisão': 'status-aguardando', 'Suspenso': 'status-aguardando',
+    'Pendente': 'status-novo', 'Em Análise': 'status-novo',
+  };
+  const cls = map[s] || 'status-aguardando';
+  return `<span class="badge-status ${cls}">${s}</span>`;
+}
+
+function priorityDot(p) {
+  const cls = p === 'Alta' ? 'p-alta' : p === 'Média' ? 'p-media' : 'p-baixa';
+  return `<span class="priority ${cls}"></span> ${p}`;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const target = new Date(dateStr + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.ceil((target - today) / 86400000);
+}
+
+function prazoColor(days) {
+  if (days === null) return '';
+  if (days < 0) return 'color:var(--red-light);font-weight:700';
+  if (days <= 3) return 'color:var(--red-light);font-weight:700';
+  if (days <= 7) return 'color:var(--orange);font-weight:700';
+  return 'color:var(--green);font-weight:600';
+}
+
+function prazoLabel(days) {
+  if (days === null) return '';
+  if (days < 0) return `<span style="${prazoColor(days)}">Vencido (${Math.abs(days)}d)</span>`;
+  if (days === 0) return `<span style="${prazoColor(days)}">HOJE</span>`;
+  return `<span style="${prazoColor(days)}">${days}d</span>`;
+}
+
+function filterTable(tbodyId, query) {
+  const tbody = document.getElementById(tbodyId);
+  const rows = tbody.querySelectorAll('tr');
+  const q = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function genId() { return Date.now() + Math.random().toString(36).slice(2); }
+
+// ══════════════════════════════════════════════════════
+// AGENDA
+// ══════════════════════════════════════════════════════
+
+function addAgenda() {
+  const titulo = document.getElementById('ag-titulo').value.trim();
+  const data = document.getElementById('ag-data').value;
+  if (!titulo || !data) { alert('Preencha Título e Data.'); return; }
+
+  const item = {
+    id: genId(),
+    titulo,
+    data,
+    hora: document.getElementById('ag-hora').value,
+    tipo: document.getElementById('ag-tipo').value,
+    processo: document.getElementById('ag-processo').value,
+    local: document.getElementById('ag-local').value,
+    prioridade: document.getElementById('ag-prioridade').value,
+    status: document.getElementById('ag-status').value,
+    obs: document.getElementById('ag-obs').value,
+  };
+
+  state.agenda.push(item);
+  state.agenda.sort((a, b) => a.data.localeCompare(b.data));
+  renderAgenda();
+  renderCalendar();
+  updateStats();
+
+  ['ag-titulo','ag-hora','ag-processo','ag-local','ag-obs','ag-data'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('add-agenda').classList.remove('open');
+  saveData();
+  showToast('📅 Compromisso adicionado!');
+}
+
+function removeAgenda(id) {
+  if (!confirm('Remover este compromisso?')) return;
+  state.agenda = state.agenda.filter(i => i.id !== id);
+  renderAgenda(); renderCalendar(); updateStats(); saveData();
+}
+
+function renderAgenda() {
+  const tbody = document.getElementById('agenda-tbody');
+  if (!state.agenda.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Nenhum compromisso cadastrado.</td></tr>';
+    document.getElementById('timeline-agenda').innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>Nenhum compromisso</div>';
+    return;
+  }
+
+  tbody.innerHTML = state.agenda.map(item => {
+    const days = daysUntil(item.data);
+    return `<tr>
+      <td style="white-space:nowrap;${prazoColor(days)}">${formatDate(item.data)}</td>
+      <td>${item.hora || '—'}</td>
+      <td style="font-weight:600">${item.titulo}</td>
+      <td><span style="font-size:10px;background:var(--ice-mid);padding:2px 6px;border-radius:10px">${item.tipo}</span></td>
+      <td>${item.processo || '—'}</td>
+      <td>${item.local || '—'}</td>
+      <td>${priorityDot(item.prioridade)}</td>
+      <td>${statusBadge(item.status)}</td>
+      <td style="max-width:160px;font-size:11px;color:var(--text-muted)">${item.obs || '—'}</td>
+      <td><button class="btn btn-danger" onclick="removeAgenda('${item.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  // Timeline (próximos 10)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const upcoming = state.agenda.filter(i => new Date(i.data + 'T00:00:00') >= today).slice(0, 8);
+  const tl = document.getElementById('timeline-agenda');
+
+  if (!upcoming.length) {
+    tl.innerHTML = '<div class="empty-state">Sem compromissos futuros</div>';
+    return;
+  }
+
+  tl.innerHTML = `<div class="timeline">` + upcoming.map(item => {
+    const days = daysUntil(item.data);
+    const cls = days <= 2 ? 'urgent' : days <= 5 ? 'warning' : '';
+    return `<div class="timeline-item ${cls}">
+      <div class="timeline-date">${formatDate(item.data)} ${item.hora ? '• ' + item.hora : ''}</div>
+      <div class="timeline-title">${item.titulo}</div>
+      <div class="timeline-desc">${item.tipo}${item.local ? ' · ' + item.local : ''}${item.processo ? ' · ' + item.processo : ''}</div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// PROCESSOS
+// ══════════════════════════════════════════════════════
+
+function addProcesso() {
+  const numero = document.getElementById('pr-numero').value.trim();
+  const cliente = document.getElementById('pr-cliente').value.trim();
+  if (!numero || !cliente) { alert('Preencha Número do Processo e Cliente.'); return; }
+
+  const item = {
+    id: genId(),
+    numero, cliente,
+    adversa: document.getElementById('pr-adversa').value,
+    area: document.getElementById('pr-area').value,
+    vara: document.getElementById('pr-vara').value,
+    fase: document.getElementById('pr-fase').value,
+    prazo: document.getElementById('pr-prazo').value,
+    status: document.getElementById('pr-status').value,
+    valor: document.getElementById('pr-valor').value,
+    obs: document.getElementById('pr-obs').value,
+  };
+
+  state.processos.push(item);
+  renderProcessos();
+  updateStats();
+
+  ['pr-numero','pr-cliente','pr-adversa','pr-vara','pr-prazo','pr-valor','pr-obs'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('add-processo').classList.remove('open');
+  saveData();
+  showToast('⚖️ Processo cadastrado!');
+}
+
+function removeProcesso(id) {
+  if (!confirm('Remover este processo?')) return;
+  state.processos = state.processos.filter(i => i.id !== id);
+  renderProcessos(); updateStats(); saveData();
+}
+
+function filterProcessos(filter, btn) {
+  state.filterProcessos = filter;
+  document.querySelectorAll('#panel-processos .filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderProcessos();
+}
+
+function renderProcessos() {
+  const filter = state.filterProcessos;
+  const list = filter === 'todos' ? state.processos : state.processos.filter(p => p.status === filter);
+
+  const kpiTotal = state.processos.length;
+  const kpiAndamento = state.processos.filter(p => p.status === 'Em Andamento').length;
+  const kpiCritico = state.processos.filter(p => {
+    const d = daysUntil(p.prazo);
+    return d !== null && d <= 7;
+  }).length;
+  const kpiConcluido = state.processos.filter(p => p.status === 'Concluído').length;
+
+  document.getElementById('kpi-total-proc').textContent = kpiTotal;
+  document.getElementById('kpi-em-andamento').textContent = kpiAndamento;
+  document.getElementById('kpi-critico').textContent = kpiCritico;
+  document.getElementById('kpi-concluido').textContent = kpiConcluido;
+
+  document.getElementById('badge-processos').textContent = kpiTotal;
+
+  const tbody = document.getElementById('processos-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="11" class="empty-state">Nenhum processo encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const days = daysUntil(item.prazo);
+    return `<tr>
+      <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--blue)">${item.numero}</td>
+      <td style="font-weight:600">${item.cliente}</td>
+      <td>${item.adversa || '—'}</td>
+      <td><span style="font-size:10px;background:var(--ice-mid);padding:2px 6px;border-radius:10px">${item.area}</span></td>
+      <td style="font-size:11px">${item.vara || '—'}</td>
+      <td style="font-size:11px">${item.fase}</td>
+      <td style="white-space:nowrap">${item.prazo ? `${formatDate(item.prazo)} ${prazoLabel(days)}` : '—'}</td>
+      <td style="font-size:11px">${item.valor ? 'R$ ' + item.valor : '—'}</td>
+      <td>${statusBadge(item.status)}</td>
+      <td style="max-width:180px;font-size:11px;color:var(--text-muted)">${item.obs || '—'}</td>
+      <td><button class="btn btn-danger" onclick="removeProcesso('${item.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// TAREFAS
+// ══════════════════════════════════════════════════════
+
+function addTarefa() {
+  const titulo = document.getElementById('tk-titulo').value.trim();
+  if (!titulo) { alert('Preencha a descrição da tarefa.'); return; }
+
+  const item = {
+    id: genId(),
+    titulo,
+    categoria: document.getElementById('tk-categoria').value,
+    processo: document.getElementById('tk-processo').value,
+    prazo: document.getElementById('tk-prazo').value,
+    responsavel: document.getElementById('tk-resp').value,
+    prioridade: document.getElementById('tk-prioridade').value,
+    status: document.getElementById('tk-status').value,
+    desc: document.getElementById('tk-desc').value,
+    done: false,
+  };
+
+  state.tarefas.push(item);
+  renderTarefas();
+  updateStats();
+
+  ['tk-titulo','tk-processo','tk-prazo','tk-resp','tk-desc'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('add-tarefa').classList.remove('open');
+  saveData();
+  showToast('✅ Tarefa adicionada!');
+}
+
+function removeTarefa(id) {
+  if (!confirm('Remover esta tarefa?')) return;
+  state.tarefas = state.tarefas.filter(i => i.id !== id);
+  renderTarefas(); updateStats(); saveData();
+}
+
+function toggleTarefa(id) {
+  const item = state.tarefas.find(i => i.id === id);
+  if (item) {
+    item.done = !item.done;
+    item.status = item.done ? 'Concluída' : 'Pendente';
+    renderTarefas(); updateStats(); saveData();
+  }
+}
+
+function filterTarefas(filter, btn) {
+  state.filterTarefas = filter;
+  document.querySelectorAll('#panel-tarefas .filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderTarefas();
+}
+
+function renderTarefas() {
+  const filter = state.filterTarefas;
+  let list = state.tarefas;
+  if (filter === 'Alta') list = list.filter(t => t.prioridade === 'Alta');
+  else if (filter !== 'todas') list = list.filter(t => t.status === filter);
+
+  const pending = state.tarefas.filter(t => !t.done).length;
+  document.getElementById('badge-tarefas').textContent = pending;
+
+  const tbody = document.getElementById('tarefas-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Nenhuma tarefa encontrada.</td></tr>';
+  } else {
+    tbody.innerHTML = list.map(item => {
+      const days = daysUntil(item.prazo);
+      return `<tr style="${item.done ? 'opacity:0.6' : ''}">
+        <td><input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTarefa('${item.id}')" style="accent-color:var(--gold)"></td>
+        <td style="font-weight:${item.done ? '400' : '600'};text-decoration:${item.done ? 'line-through' : 'none'}">${item.titulo}</td>
+        <td><span style="font-size:10px;background:var(--ice-mid);padding:2px 6px;border-radius:10px">${item.categoria}</span></td>
+        <td style="font-size:11px">${item.processo || '—'}</td>
+        <td style="white-space:nowrap">${item.prazo ? `${formatDate(item.prazo)} ${prazoLabel(days)}` : '—'}</td>
+        <td>${item.responsavel || '—'}</td>
+        <td>${priorityDot(item.prioridade)}</td>
+        <td>${statusBadge(item.status)}</td>
+        <td style="max-width:160px;font-size:11px;color:var(--text-muted)">${item.desc || '—'}</td>
+        <td><button class="btn btn-danger" onclick="removeTarefa('${item.id}')">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Progress por categoria
+  const cats = {};
+  state.tarefas.forEach(t => {
+    if (!cats[t.categoria]) cats[t.categoria] = { total: 0, done: 0 };
+    cats[t.categoria].total++;
+    if (t.done) cats[t.categoria].done++;
+  });
+
+  const progEl = document.getElementById('progress-categorias');
+  if (!Object.keys(cats).length) {
+    progEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>Sem dados ainda</div>';
+  } else {
+    progEl.innerHTML = Object.entries(cats).map(([cat, data]) => {
+      const pct = data.total ? Math.round((data.done / data.total) * 100) : 0;
+      return `<div class="progress-wrap" style="margin-bottom:10px">
+        <div class="progress-label"><span>${cat}</span><span>${data.done}/${data.total}</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-label" style="margin-top:2px"><span></span><span style="color:var(--gold-dim);font-weight:600">${pct}%</span></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── Checklist de legislações ──
+
+let clNextId = 100;
+
+function renderChecklistLegislacao() {
+  const container = document.getElementById('checklist-legislacao');
+  const empty = document.getElementById('cl-empty');
+
+  if (!state.checklistLegislacao.length) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  const items = state.checklistLegislacao;
+  const existing = container.querySelectorAll('.cl-real');
+  existing.forEach(e => e.remove());
+
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = `checklist-item cl-real ${item.done ? 'done' : ''}`;
+    div.innerHTML = `
+      <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleClItem(${item.id})">
+      <div style="flex:1">
+        <div class="checklist-item-text">${item.text}</div>
+        <div class="checklist-item-meta">${item.ref || ''}</div>
+      </div>
+      <button class="action-btn" onclick="removeClItem(${item.id})" title="Remover">✕</button>
+    `;
+    container.insertBefore(div, empty);
+  });
+}
+
+function toggleClItem(id) {
+  const item = state.checklistLegislacao.find(i => i.id === id);
+  if (item) { item.done = !item.done; renderChecklistLegislacao(); saveData(); }
+}
+
+function removeClItem(id) {
+  state.checklistLegislacao = state.checklistLegislacao.filter(i => i.id !== id);
+  renderChecklistLegislacao(); saveData();
+}
+
+function addCheckItem() {
+  const text = prompt('Novo item de checklist:');
+  if (!text) return;
+  const ref = prompt('Referência/categoria (opcional):') || '';
+  state.checklistLegislacao.push({ id: clNextId++, text, ref, done: false });
+  renderChecklistLegislacao(); saveData();
+}
+
+// ══════════════════════════════════════════════════════
+// CONTRATOS
+// ══════════════════════════════════════════════════════
+
+function renderContractChecklist() {
+  const container = document.getElementById('ct-checklist');
+  container.innerHTML = contractChecklist.map((item, i) =>
+    `<label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:3px 0">
+      <input type="checkbox" id="ct-cl-${i}" style="accent-color:var(--gold)"> ${item}
+    </label>`
+  ).join('');
+}
+
+function getContractChecklistState() {
+  return contractChecklist.map((item, i) => ({
+    item,
+    checked: document.getElementById('ct-cl-' + i)?.checked || false,
+  }));
+}
+
+function addContrato() {
+  const titulo = document.getElementById('ct-titulo').value.trim();
+  if (!titulo) { alert('Preencha a identificação do contrato.'); return; }
+
+  const item = {
+    id: genId(),
+    titulo,
+    tipo: document.getElementById('ct-tipo').value,
+    parteA: document.getElementById('ct-parteA').value,
+    parteB: document.getElementById('ct-parteB').value,
+    assinatura: document.getElementById('ct-assinatura').value,
+    vencimento: document.getElementById('ct-vencimento').value,
+    valor: document.getElementById('ct-valor').value,
+    renovacao: document.getElementById('ct-renovacao').value,
+    status: document.getElementById('ct-status').value,
+    obs: document.getElementById('ct-obs').value,
+    checklist: getContractChecklistState(),
+  };
+
+  state.contratos.push(item);
+  renderContratos();
+  updateStats();
+
+  ['ct-titulo','ct-parteA','ct-parteB','ct-valor','ct-obs'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  ['ct-assinatura','ct-vencimento'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  renderContractChecklist();
+  document.getElementById('add-contrato').classList.remove('open');
+  saveData();
+  showToast('📄 Contrato cadastrado!');
+}
+
+function removeContrato(id) {
+  if (!confirm('Remover este contrato?')) return;
+  state.contratos = state.contratos.filter(i => i.id !== id);
+  renderContratos(); updateStats(); saveData();
+}
+
+function filterContratos(filter, btn) {
+  state.filterContratos = filter;
+  document.querySelectorAll('#panel-contratos .filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderContratos();
+}
+
+function renderContratos() {
+  const filter = state.filterContratos;
+  const list = filter === 'todos' ? state.contratos : state.contratos.filter(c => c.status === filter);
+
+  document.getElementById('stat-contr').textContent = state.contratos.filter(c => c.status === 'Em Análise').length;
+
+  const tbody = document.getElementById('contratos-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="empty-state">Nenhum contrato encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const days = daysUntil(item.vencimento);
+    const done = item.checklist ? item.checklist.filter(c => c.checked).length : 0;
+    const total = item.checklist ? item.checklist.length : 0;
+    const pct = total ? Math.round(done/total*100) : 0;
+    return `<tr>
+      <td style="font-weight:600;min-width:180px">${item.titulo}</td>
+      <td><span style="font-size:10px;background:var(--ice-mid);padding:2px 6px;border-radius:10px">${item.tipo}</span></td>
+      <td>${item.parteA || '—'}</td>
+      <td>${item.parteB || '—'}</td>
+      <td>${formatDate(item.assinatura)}</td>
+      <td style="white-space:nowrap">${item.vencimento ? `${formatDate(item.vencimento)} ${prazoLabel(days)}` : '—'}</td>
+      <td>${item.valor ? 'R$ ' + item.valor : '—'}</td>
+      <td>${item.renovacao}</td>
+      <td>${statusBadge(item.status)}</td>
+      <td style="max-width:160px;font-size:11px;color:var(--text-muted)">${item.obs || '—'}</td>
+      <td style="min-width:80px">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">${done}/${total} (${pct}%)</div>
+        <div class="progress-bar" style="height:4px"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </td>
+      <td><button class="btn btn-danger" onclick="removeContrato('${item.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// PRAZOS
+// ══════════════════════════════════════════════════════
+
+function renderPrazos() {
+  const allPrazos = [];
+
+  state.processos.forEach(p => {
+    if (p.prazo) allPrazos.push({ label: p.numero + ' — ' + p.cliente, desc: p.fase + ' · ' + p.vara, date: p.prazo, tipo: 'Processo', status: p.status });
+  });
+
+  state.agenda.forEach(a => {
+    if (a.data) allPrazos.push({ label: a.titulo, desc: a.tipo + (a.local ? ' · ' + a.local : ''), date: a.data, tipo: 'Agenda', status: a.status });
+  });
+
+  state.contratos.forEach(c => {
+    if (c.vencimento) allPrazos.push({ label: c.titulo, desc: c.tipo + (c.parteA ? ' · ' + c.parteA : ''), date: c.vencimento, tipo: 'Contrato', status: c.status });
+  });
+
+  allPrazos.sort((a, b) => a.date.localeCompare(b.date));
+
+  const p3 = allPrazos.filter(p => { const d = daysUntil(p.date); return d !== null && d >= 0 && d <= 3; });
+  const p7 = allPrazos.filter(p => { const d = daysUntil(p.date); return d !== null && d > 3 && d <= 7; });
+  const p30 = allPrazos.filter(p => { const d = daysUntil(p.date); return d !== null && d > 7 && d <= 30; });
+
+  document.getElementById('pz-3dias').textContent = p3.length;
+  document.getElementById('pz-7dias').textContent = p7.length;
+  document.getElementById('pz-30dias').textContent = p30.length;
+  document.getElementById('badge-prazos').textContent = p3.length + p7.length;
+
+  const container = document.getElementById('prazos-list');
+
+  if (!allPrazos.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:48px"><div class="empty-icon">⏰</div>Nenhum prazo cadastrado.</div>';
+    return;
+  }
+
+  let html = '';
+
+  if (p3.length) {
+    html += `<div class="section-title" style="font-size:12px;color:var(--red-light);margin:12px 0 8px">🔴 Crítico — Vencendo em até 3 dias</div>`;
+    html += p3.map(p => prazoCard(p, 'critical')).join('');
+  }
+
+  if (p7.length) {
+    html += `<div class="section-title" style="font-size:12px;color:var(--orange);margin:16px 0 8px">🟡 Atenção — Vencendo em até 7 dias</div>`;
+    html += p7.map(p => prazoCard(p, 'warning')).join('');
+  }
+
+  if (p30.length) {
+    html += `<div class="section-title" style="font-size:12px;color:var(--blue-light);margin:16px 0 8px">🔵 Planejamento — Vencendo em até 30 dias</div>`;
+    html += p30.map(p => prazoCard(p, 'info')).join('');
+  }
+
+  const vencidos = allPrazos.filter(p => daysUntil(p.date) < 0);
+  if (vencidos.length) {
+    html += `<div class="section-title" style="font-size:12px;color:var(--text-light);margin:16px 0 8px">⬛ Vencidos</div>`;
+    html += vencidos.map(p => prazoCard(p, 'critical')).join('');
+  }
+
+  container.innerHTML = html;
+}
+
+function prazoCard(p, cls) {
+  const days = daysUntil(p.date);
+  const dLabel = days < 0 ? `Vencido há ${Math.abs(days)}d` : days === 0 ? 'HOJE!' : `${days} dia${days > 1 ? 's' : ''}`;
+  const icon = p.tipo === 'Processo' ? '⚖️' : p.tipo === 'Agenda' ? '📅' : '📄';
+
+  return `<div class="prazo-alert ${cls}">
+    <div class="prazo-icon">${icon}</div>
+    <div class="prazo-content">
+      <div class="prazo-title">${p.label}</div>
+      <div class="prazo-meta">${p.desc} · <strong>${p.tipo}</strong> · ${formatDate(p.date)}</div>
+    </div>
+    <div class="prazo-days">${dLabel}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// STATS & URGENCY GAUGE
+// ══════════════════════════════════════════════════════
+
+function updateStats() {
+  // Sidebar stats
+  document.getElementById('stat-proc').textContent = state.processos.filter(p => p.status !== 'Concluído' && p.status !== 'Arquivado').length;
+  document.getElementById('stat-tasks').textContent = state.tarefas.filter(t => !t.done).length;
+
+  // Audiências este mês
+  const now = new Date();
+  const audCount = state.agenda.filter(a => {
+    const d = new Date(a.data + 'T00:00:00');
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && a.tipo === 'Audiência';
+  }).length;
+  document.getElementById('stat-aud').textContent = audCount;
+
+  // Urgency gauge
+  const allPrazos = [];
+  state.processos.forEach(p => { if (p.prazo) allPrazos.push(daysUntil(p.prazo)); });
+  state.agenda.forEach(a => { if (a.data) allPrazos.push(daysUntil(a.data)); });
+  state.contratos.forEach(c => { if (c.vencimento) allPrazos.push(daysUntil(c.vencimento)); });
+  const valid = allPrazos.filter(d => d !== null && d >= 0);
+
+  const critical = valid.filter(d => d <= 3).length;
+  const warning = valid.filter(d => d > 3 && d <= 7).length;
+  const ok = valid.filter(d => d > 7).length;
+  const total = valid.length || 1;
+
+  document.getElementById('urg-critical').style.width = (critical/total*100) + '%';
+  document.getElementById('urg-warning').style.width = (warning/total*100) + '%';
+  document.getElementById('urg-ok').style.width = (ok/total*100) + '%';
+  document.getElementById('urg-critical-count').textContent = critical;
+  document.getElementById('urg-warning-count').textContent = warning;
+  document.getElementById('urg-ok-count').textContent = ok;
+
+  // Sidebar upcoming
+  const today = new Date(); today.setHours(0,0,0,0);
+  const upcoming = state.agenda
+    .filter(a => new Date(a.data + 'T00:00:00') >= today)
+    .slice(0, 3);
+
+  const sideEl = document.getElementById('sidebar-eventos');
+  if (!upcoming.length) {
+    sideEl.innerHTML = '<span style="color:var(--text-light)">Nenhum evento próximo.</span>';
+  } else {
+    sideEl.innerHTML = upcoming.map(a => `
+      <div style="padding:4px 0;border-bottom:1px solid var(--slate-mid);margin-bottom:4px">
+        <div style="color:var(--gold-light);font-weight:600">${a.titulo}</div>
+        <div style="color:var(--text-light)">${formatDate(a.data)}${a.hora ? ' ' + a.hora : ''}</div>
+      </div>`).join('');
+  }
+
+  // Prazos badge
+  const p3 = [...state.processos, ...state.agenda.map(a=>({prazo:a.data})), ...state.contratos.map(c=>({prazo:c.vencimento}))]
+    .filter(i => { const d = daysUntil(i.prazo); return d !== null && d >= 0 && d <= 7; }).length;
+  document.getElementById('badge-prazos').textContent = p3;
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+
+function init() {
+  // Dados são carregados automaticamente via Firebase (onAuthStateChanged + onSnapshot)
+  renderCalendar();
+  renderAgenda();
+  renderProcessos();
+  renderTarefas();
+  renderContratos();
+  renderChecklistLegislacao();
+  renderContractChecklist();
+  updateStats();
+
+  // Set default date inputs to today
+  const today = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('input[type="date"]').forEach(el => {
+    if (!el.value) el.value = today;
+  });
+}
+
+init();
+</script>
+</body>
+</html>
